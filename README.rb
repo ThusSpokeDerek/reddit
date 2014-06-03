@@ -1,90 +1,112 @@
+#we're going to set up our Ruby application to deploy so that our backend logic will run on it's own, and we'll also have the option of a pretty front end.
 
+#To do this, we're going to use Sinatra. 
+#[Sinatra](http://www.sinatrarb.com/). is a ruby gem that provides a very light-weight framework for building and deploying ruby applications. 
 
-Heroku is a platform that allows for easy CLI deployment of Ruby applications through integration with github (as well as Node.js, Python, and Java).
+#we'll need to create a bunch of different files and directories, starting with `app.rb`
+#this file is responsible for bundling all of the ruby logic you write and passing it to the browser.
+#its the big communicator of your application
 
-First thing's first, you have to have a Heroku account. It's free to sign up.
+#at the top of our app.rb file we're going to need to require a bunch of stuff:
+require 'bundler' #require bundler
+Bundler.require #require everything in bundler in gemfile
+require 'pry'
 
-There is one file that Heroku needs in order to succesfully execute our application that we didn't need to run our app locally. The file we need to create a `Procfile` in the root of our app. Our Procfile just needs the line `web: bundle exec ruby app.rb -p $PORT`.
+#bundler is a package for managing gems. 
 
-From there, we're going to follow the instructions on [Heroku's Dev Center](https://devcenter.heroku.com/articles/git).
+#Let's go ahead and make files to copy and paste our code in from our messaging lab
+#`mkdir lib`
+#touch ./lib/messaging.rb 
+#touch ./lib/scraping.rb
 
-We already have a git repository with our most recent code pushed up to git, so we can ignore the first few steps.
+#we'll need to require these files in app.rb so that the root of our application knows the files exist
 
-The first thing we need to do is make sure we're in the directory of our Sinatra application in terminal. From there, we'll enter `heroku create`
+require 'bundler' #require bundler
+Bundler.require #require everything in bundler in gemfile
+require 'pry'
+require './lib/scraping.rb'
+require './lib/messaging.rb'
 
-This will add a heroku remote to our project. We can enter `git remote -v` to check that both our remote git and remote heroku repositories exist.
+#let's also copy and paste our Rakefile -- we'll need to change the path to the files we're requiring
+#because they're now nested in the lib directory
 
-Now, we need to send our code stored in git to heroku. We basically have to link the two. 
-`git push heroku master`.
-This will take a second to run, but we're deployed!
+#Next we're going to create a Gemfile. A gemfile is basically a Ruby way to manage all the gems used in an application, and keep versions stable within projects
+#If a new version of Nokogiri comes out and a lot is changed, we don't want our entire app to break just because we wrote it with an older version
 
-`heroku open` will open our application in the browser, and we can see our handy work.
+source 'https://rubygems.org'
 
-You'll notice we haven't scheduled our rake task to be run yet. Nothing has told our application to execute it. Heroku has some handy addons, including one called `scheduler`. We're going to use (that)[https://addons.heroku.com/scheduler] free addon to schedule our rake task.
+gem 'sinatra'
 
-`heroku addons:add scheduler:standard`
+gem 'shotgun'
 
-So now we can test our rake task in heroku ` heroku run rake check_tweet_time`
+gem 'rake'
 
-Now that that works, we'll need to set the scheduler addon to run the rake task, `heroku addons:open scheduler` will open that interface in the browswer for us.
+gem 'nokogiri'
 
-We'll click `add job`. And then enter `rake check_tweet_time` after the prompt, use 1 dyno, and set it to run every 10 minutes. A dyno is just like a worker, I don't need more than that to execute this.
+gem 'pry'
 
-So now we can tweet and check back in 10 minutes for an email.
+gem 'mailgun'
 
-So now we have one issue: we left all of our email information and authentication keys for mailgun on github. Our repositories are private right now, so we're not in any danger here, but imagine if our repository was public and it was our real gmail account information. Anyone with a computer could find our information. It's a really stupid way to open yourself up to hackers.
+#Once the Gemfile has been created, we'll enter 'bundle install' in terminal
+#This will create a Gemfile.lock file which locks in all the proper versions of your gems for this particular project.
 
-Luckily, Heroku has a great way to [hide these configuaration values](https://devcenter.heroku.com/articles/config-vars).
-This is the example they give in their documentation. 
-`heroku config:set GITHUB_USERNAME=joesmith`
+#so now that we have all our gems set up and our previously written ruby code in the application.
+#we can work on putting all of this together in sinatra
+# becuase app.rb manages the logic that takes your ruby code and passes it to the browser
+#it has special language for managing the routes of your application
+#aka, the url's that you use to go to a website
 
-So let's think about all the values I want to hide:
-In messaging.rb my api_key on line 5 and the domain on line 6.
-And in config.ru the user_name and password on lines 8 and 9.
+get '/' do
+  erb :index
+end
 
-So we can fix those immediately:
-```
-heroku config:set MAILGUN_API_KEY=key-6uiavyyd3nmb9adpaii04drw93y8ymq8
-heroku config:set MAILGUN_DOMAIN=sandbox9e40982438de4c218c126056aa8f25ea.mailgun.org
-heroku config:set SMTP_USERNAME=postmaster@sandbox9e40982438de4c218c126056aa8f25ea.mailgun.org
-heroku config:set SMTP_PASSWORD=7u2yp3x6t6w9
-```
+#the get method is telling the root directory to go to an .html.erb file called 'index' 
+#the .erb extension allows us to write ruby in the browser
+#we'll create that now and put it in a 'views' directory and add some simple HTML to start
+`<h1> heyyy! </h1>`
 
-`heroku config` will return all the configurations we've set so we can make sure everything is done correctly. So now we need to take those values out of our code
+#we're using the shotgun gem to run localhost to view our work in the browser.
+#localhost is the internal server of your computer. It's what we run to execute our code and see how it would work on a remote server
+#`shotgun app.rb` will start up localhost and then in the browser go to `localhost:` and the port shotgun tells us.
+#shotgun is a cool and useful gem because it leaves our server running and reloads any changes to our code without us having to do it manually
 
-In messaging.rb, our code becomes:
-```RUBY
-  Mailgun.configure do |config|
-    config.api_key = ENV[MAILGUN_API_KEY]
-    config.domain  = ENV[MAILGUN_DOMAIN]
-  end
-```
+#So because we used MailGun for this project, we'll need to set up SMTP configurations.
+#SMTP stands for Simple Mail Transfer Protocol. Just like HTTP is the transfer protocol for the browser, SMTP is for sending emails.
+#we'll create a 'config.ru' file
 
-In config.ru, our code on lines 8 and 9 become:
-```
-    :user_name => ENV[SMTP_USERNAME],
-    :password =>  ENV[SMTP_PASSWORD],
-```
+require './app'
+run Sinatra::Application
 
-Now we can commit those changes to github. The only problem left is that github tracks old commits, so we can still find our passwords and stuff. Let's go ahead and [get rid of those](https://help.github.com/articles/remove-sensitive-data).
+Mail.defaults do
+  delivery_method :smtp, {
+    :address => 'smtp.sendgrid.net',
+    :port => 587,
+    :domain => 'localhost:9393',
+    :user_name => 'postmaster@sandbox9e40982438de4c218c126056aa8f25ea.mailgun.org',
+    :password =>  '7u2yp3x6t6w9',
+    :authentication => 'plain',
+    :enable_starttls_auto => true
+  }
+end
 
-We'll actually need to wipe the file from github and it's history, and then re-add it with out heroku environment configs. 
+#here we specified the email address from mailgun and the password that goes along with the account
+#we're setting the domain to localhost because we're just testing this locally (that'll change when we deploy)
 
-I'm going to make sure I have the documents open before I run the commands in terminal because it will wipe them entirely from memory, both locally and remotely.
+#If we wanted to display the most recent tweet in the browser, we'll need to put a little more logic in `get '/'` in app.rb
+#Our index.html.erb doesn't have access to our classes in scraping.rb and messaging.rb without us telling it
 
-This will remove messaging.rb: 
-```
- git filter-branch --force --index-filter \
-'git rm --cached --ignore-unmatch ./lib/messaging.rb' \
- --prune-empty --tag-name-filter cat -- --all
-```
+get '/' do
+  @twitter_nokogiri = TwitterNokogiri.new("https://www.twitter.com/vicfriedman")
+  erb :index #this tells your program to use the html associated with the index.html.erb file in your browser
+end 
 
-and this will remove config.ru:
-```
- git filter-branch --force --index-filter \
-'git rm --cached --ignore-unmatch ./config.ru' \
- --prune-empty --tag-name-filter cat -- --all
-```
+#and now in index.html.erb....
+`<h1> MY APP </h1>`
+`<p> This tweet: <%= @twitter_nokogiri.tweet_text %> was tweeted at <%= Time.at(@twitter_nokogiri.tweet_time.to_i) %>`
 
-After this, we just resave the files, add, commit, and push them up to github. Voila!
+# the `<%= %> are called erb tags. it's how we can embed ruby right into the HTML. 
+#our browser will evuluate the ruby code and then write the return value as part of the HTML
+# Now to see this in the brower if we refesh, the most recent tweet.
+
+#we can also check our rake task by entering `rake check_tweet_time`
 
