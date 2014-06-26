@@ -8,45 +8,41 @@
 #its the big communicator of your application
 
 #at the top of our app.rb file we're going to need to require a bunch of stuff:
+```
 require 'bundler' #require bundler
 Bundler.require #require everything in bundler in gemfile
 require 'pry'
-
+```
 #bundler is a package for managing gems. 
 
 #Let's go ahead and make files to copy and paste our code in from our messaging lab
 #`mkdir lib`
-#touch ./lib/messaging.rb 
-#touch ./lib/scraping.rb
+#touch ./lib/emailer.rb 
+#touch ./lib/scraper.rb
 
 #we'll need to require these files in app.rb so that the root of our application knows the files exist
-
+```
 require 'bundler' #require bundler
 Bundler.require #require everything in bundler in gemfile
 require 'pry'
-require './lib/scraping.rb'
-require './lib/messaging.rb'
-
+require './lib/scraper.rb'
+require './lib/emailer.rb'
+```
 #let's also copy and paste our Rakefile -- we'll need to change the path to the files we're requiring
 #because they're now nested in the lib directory
 
 #Next we're going to create a Gemfile. A gemfile is basically a Ruby way to manage all the gems used in an application, and keep versions stable within projects
 #If a new version of Nokogiri comes out and a lot is changed, we don't want our entire app to break just because we wrote it with an older version
-
+```
 source 'https://rubygems.org'
 
 gem 'sinatra'
-
 gem 'shotgun'
-
 gem 'rake'
-
 gem 'nokogiri'
-
-gem 'pry'
-
 gem 'mailgun'
-
+gem 'pry'
+```
 #Once the Gemfile has been created, we'll enter 'bundle install' in terminal
 #This will create a Gemfile.lock file which locks in all the proper versions of your gems for this particular project.
 
@@ -55,11 +51,11 @@ gem 'mailgun'
 # becuase app.rb manages the logic that takes your ruby code and passes it to the browser
 #it has special language for managing the routes of your application
 #aka, the url's that you use to go to a website
-
+```
 get '/' do
   erb :index
 end
-
+```
 #the get method is telling the root directory to go to an .html.erb file called 'index' 
 #the .erb extension allows us to write ruby in the browser
 #we'll create that now and put it in a 'views' directory and add some simple HTML to start
@@ -73,7 +69,7 @@ end
 #So because we used MailGun for this project, we'll need to set up SMTP configurations.
 #SMTP stands for Simple Mail Transfer Protocol. Just like HTTP is the transfer protocol for the browser, SMTP is for sending emails.
 #we'll create a 'config.ru' file
-
+```
 require './app'
 run Sinatra::Application
 
@@ -88,25 +84,27 @@ Mail.defaults do
     :enable_starttls_auto => true
   }
 end
-
+```
 #here we specified the email address from mailgun and the password that goes along with the account
 #we're setting the domain to localhost because we're just testing this locally (that'll change when we deploy)
 
 #If we wanted to display the most recent tweet in the browser, we'll need to put a little more logic in `get '/'` in app.rb
 #Our index.html.erb doesn't have access to our classes in scraping.rb and messaging.rb without us telling it
-
+```
 get '/' do
-  @twitter_nokogiri = TwitterNokogiri.new("https://www.twitter.com/vicfriedman")
+  scraper = Scraper.new("https://www.twitter.com/jongrover")
+  @tweet = scraper.tweet_text
+  @time = Time.at(scraper.tweet_time.to_i)
   erb :index #this tells your program to use the html associated with the index.html.erb file in your browser
 end 
-
+```
 #and now in index.html.erb....
-`<h1> MY APP </h1>`
-`<p> This tweet: <%= @twitter_nokogiri.tweet_text %> was tweeted at <%= Time.at(@twitter_nokogiri.tweet_time.to_i) %>`
-
+```
+<h1>Tweet App</h1>
+<p><%= @tweet %> - <%= @time %></p>
+```
 # the `<%= %> are called erb tags. it's how we can embed ruby right into the HTML. 
 #our browser will evuluate the ruby code and then write the return value as part of the HTML
 # Now to see this in the brower if we refesh, the most recent tweet.
 
 #we can also check our rake task by entering `rake check_tweet_time`
-
