@@ -1,3 +1,12 @@
-<h1> MY APP </h1>
-<p> This tweet: <%= @twitter_nokogiri.tweet_text %> was tweeted at <%= Time.at(@twitter_nokogiri.tweet_time.to_i) %>
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Tweet App</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <h1>Tweet App</h1>
+  <p><%= @tweet %> - <%= @time %></p>
+</body>
+</html>

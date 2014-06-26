@@ -1,11 +1,11 @@
 require 'bundler' #require bundler
 Bundler.require #require everything in bundler in gemfile
-require './lib/messaging'
-require './lib/scraping'
-require 'pry'
-
+require './lib/emailer'
+require './lib/scraper'
 
 get '/' do
-  @twitter_nokogiri = TwitterNokogiri.new("https://www.twitter.com/vicfriedman")
-  erb :index #this tells your program to use the html associated with the index.html.erb file in your browser
-end 
+  scraper = Scraper.new("https://www.twitter.com/jongrover")
+  @tweet = scraper.tweet_text
+  @time = Time.at(scraper.tweet_time.to_i)
+  erb :index # This tells your program to use the html associated with the index.erb file in your browser.
+end
