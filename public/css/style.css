@@ -1,3 +1,59 @@
-p {
-  color: blue;
+@import url(http://fonts.googleapis.com/css?family=Droid+Sans+Mono);
+
+.h1 {
+  color: rgb(1450,60,60);
+  text-align: center;
+  margin: 40px;
+  padding:40px;
+  opacity: .5;
+  background-color: black;
+  border-radius: 15px;
+  font-family: 'Droid Sans Mono';
 }
+
+html{
+  background-image: url("http://www.aux.tv/wp-content/uploads/2012/10/8_bit_reddit.png");
+  background-color: gray;
+}
+
+.ever{
+  background-color: #7F1616;
+  border-radius: 15px;
+  margin-left:50px ;
+  margin-right: 50px;
+  text-align: center;
+  opacity: .8;
+  font-weight: bold;
+}
+
+.link{
+  background-color: #7F1616;
+  border-radius: 15px;
+  margin-left:50px ;
+  margin-right: 50px;
+  text-align: center;
+  opacity: .7;
+  -webkit-animation: myfirst 7s; 
+  -webkit-animation-iteration-count: infinite;
+  animation-iteration-count: infinite;
+  animation: myfirst 7s;
+}
+
+@-webkit-keyframes myfirst {
+    from {background: red;}
+    to {background: yellow;}
+    to {background: orange;}
+}
+
+
+.box{
+  text-align: center;
+}
+
+#refresh{
+  text-align: center;
+}
+
+
+
+

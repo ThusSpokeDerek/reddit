@@ -2,12 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Your Daily Reddit</title>
+  <title>Your Daily Subreddit</title>
   <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="animate.min.css">
 </head>
 <body>
 
-      <h1 class="h1">Your Daily Reddit</h1>
+      <h1 class="h1">Your Daily Subreddit</h1>
       
       <div class="box">
         <form method="post" action='/results'>
@@ -22,11 +23,10 @@
     </FORM>
     </div>
 
-  <p class="ever"><%= @nokogiri_doc.random_article %></p>
-<a href="<%= @nokogiri_doc.r_link %>">
-  <p class="link"><%= @nokogiri_doc.r_link %></p>
+ <p class="ever"><%= @doc.random_sub_article %></p>
+<a href="<%= @doc.r_sub_link %>">
+  <p class="link"><%= @doc.r_sub_link %></p>
 </a>
-
 
 
 </body>
